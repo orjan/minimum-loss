@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -43,7 +44,16 @@ namespace MinimumLoss
 
         public void AddAmount(int value, int n)
         {
+            if (value == 0 || n == 0)
+            {
+                return;
+            }
             amounts.Add(new Amount(value, n));
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Units: {0}, Amounts: {1}, Remaining: {2}", string.Join("-", units), string.Join("-", amounts),Remaining);
         }
 
         public static Match DeepClone(Match obj)

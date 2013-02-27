@@ -49,28 +49,39 @@ namespace MinimumLoss
         {
             if (match.Units.Count == 0)
             {
-                return;
+                throw new Exception("This should not happend");
             }
 
             var unit = match.Units.Pop();
 
-            var n = match.Remaining / unit;
-
-            for (int i = 0; i <= n + 1; i++)
+            if (match.Units.Count == 0)
             {
-                var newMatch = Match.DeepClone(match);
-                newMatch.AddAmount(unit, i);
+                var n = match.Remaining / unit;
+                if (match.Remaining%unit != 0)
+                {
+                    n++;
+                }
 
-                if (newMatch.IsCompleted)
-                {
-                    completedMatches.Push(newMatch);
-                }
-                else
-                {
-                    matchesInProgress.Push(newMatch);
-                }
+                match.AddAmount(unit, n);
+                completedMatches.Push(match);
             }
+            else
+            {
+                for (var i = 0; ; i++)
+                {
+                    var newMatch = Match.DeepClone(match);
+                    newMatch.AddAmount(unit, i);
 
+
+                    if (newMatch.IsCompleted)
+                    {
+                        completedMatches.Push(newMatch);
+                        break;
+                    }
+
+                    matchesInProgress.Push(newMatch);
+                }    
+            }
         }
     }
 }
