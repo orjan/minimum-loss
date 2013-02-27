@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Amount.cs" />
     <Compile Include="LossCalculator.cs" />
+    <Compile Include="Match.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
