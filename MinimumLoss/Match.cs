@@ -36,6 +36,11 @@ namespace MinimumLoss
             get { return amounts.Sum(x=>x.Total()); }
         }
 
+        public IEnumerable<Amount> Amounts
+        {
+            get { return amounts; }
+        }
+
         public void AddAmount(int value, int n)
         {
             amounts.Add(new Amount(value, n));

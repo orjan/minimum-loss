@@ -53,5 +53,15 @@ namespace MinimumLoss
             bestMatch.TotalValue.Should().Be(3);
         }
 
+        [Fact]
+        public void Should_be_able_to_calculate_Andreas_example()
+        {
+            var calc = new LossCalculator(new int[] { 1500, 1800, 2400, 3000, 3600 }, 11000);
+
+            var bestMatch = calc.BestMatch();
+
+            bestMatch.TotalValue.Should().Be(11100);
+        }
+
     }
 }
