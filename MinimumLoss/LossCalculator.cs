@@ -6,33 +6,33 @@ namespace MinimumLoss
 {
     public class LossCalculator
     {
-        private readonly int expected;
-        private readonly Stack<Match> matchesInProgress = new Stack<Match>(); 
         private readonly Stack<Match> completedMatches = new Stack<Match>();
+        private readonly int expected;
+        private readonly Stack<Match> matchesInProgress = new Stack<Match>();
         private readonly Stack<int> units;
 
         public LossCalculator(int[] unit, int expected)
         {
             this.expected = expected;
-            this.units = CreateBaseStack(unit);
+            units = CreateBaseStack(unit);
         }
 
         private Stack<int> CreateBaseStack(int[] ids)
         {
             var stack = new Stack<int>(ids.Length);
-            foreach (var i in ids.OrderBy(i => i))
+            foreach (int i in ids.OrderBy(i => i))
             {
                 stack.Push(i);
             }
             return stack;
-        } 
+        }
 
         // TODO: remove best match from this class and use calculatematches instead
         public Match BestMatch()
         {
-            return CalculateMatches().OrderByDescending(x=>x.Remaining).First();
+            return CalculateMatches().OrderByDescending(x => x.Remaining).First();
         }
-        
+
         public IEnumerable<Match> CalculateMatches()
         {
             matchesInProgress.Push(new Match(expected, units));
@@ -43,7 +43,7 @@ namespace MinimumLoss
             }
 
             return completedMatches;
-        } 
+        }
 
         private void CalculateMatch(Match match)
         {
@@ -52,35 +52,32 @@ namespace MinimumLoss
                 throw new Exception("This should not happend");
             }
 
-            var unit = match.Units.Pop();
+            int unit = match.Units.Pop();
 
+            int n = 0;
             if (match.Units.Count == 0)
             {
-                var n = match.Remaining / unit;
+                n = match.Remaining/unit;
                 if (match.Remaining%unit != 0)
                 {
                     n++;
                 }
-
-                match.AddAmount(unit, n);
-                completedMatches.Push(match);
             }
-            else
+
+            for (int i = n;; i++)
             {
-                for (var i = 0; ; i++)
+                Match newMatch = Match.DeepClone(match);
+                newMatch.AddAmount(unit, i);
+
+                Console.WriteLine(newMatch.ToString());
+
+                if (newMatch.IsCompleted)
                 {
-                    var newMatch = Match.DeepClone(match);
-                    newMatch.AddAmount(unit, i);
+                    completedMatches.Push(newMatch);
+                    break;
+                }
 
-
-                    if (newMatch.IsCompleted)
-                    {
-                        completedMatches.Push(newMatch);
-                        break;
-                    }
-
-                    matchesInProgress.Push(newMatch);
-                }    
+                matchesInProgress.Push(newMatch);
             }
         }
     }

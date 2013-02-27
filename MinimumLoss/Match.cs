@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace MinimumLoss
 {
-    [Serializable] 
+    [Serializable]
     public class Match
     {
+        private readonly IList<Amount> amounts = new List<Amount>();
         private readonly int target;
         private readonly Stack<int> units;
-        private readonly IList<Amount> amounts = new List<Amount>();
 
         public Match(int target, Stack<int> units)
         {
@@ -30,11 +29,14 @@ namespace MinimumLoss
             get { return Remaining <= 0; }
         }
 
-        public Stack<int> Units {get { return units; }} 
+        public Stack<int> Units
+        {
+            get { return units; }
+        }
 
         public int TotalValue
         {
-            get { return amounts.Sum(x=>x.Total()); }
+            get { return amounts.Sum(x => x.Total()); }
         }
 
         public IEnumerable<Amount> Amounts
@@ -53,7 +55,8 @@ namespace MinimumLoss
 
         public override string ToString()
         {
-            return string.Format("Units: {0}, Amounts: {1}, Remaining: {2}", string.Join("-", units), string.Join("-", amounts),Remaining);
+            return string.Format("Units: {0}, Amounts: {1}, Remaining: {2}, Completed: {3}", string.Join("-", units),
+                                 string.Join("-", amounts), Remaining, IsCompleted);
         }
 
         public static Match DeepClone(Match obj)
@@ -64,7 +67,7 @@ namespace MinimumLoss
                 formatter.Serialize(ms, obj);
                 ms.Position = 0;
 
-                return (Match)formatter.Deserialize(ms);
+                return (Match) formatter.Deserialize(ms);
             }
         }
     }
