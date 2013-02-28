@@ -7,7 +7,6 @@ namespace MinimumLoss
 {
     public class CalculateLossTest
     {
-        
         [Theory]
         [InlineData(new[] { 3 }, 6, 6)]
         //[InlineData(new[] { 3 }, 12, 12)]
@@ -20,7 +19,16 @@ namespace MinimumLoss
             Match bestMatch = calc.BestMatch();
 
             bestMatch.TotalValue.Should().Be(expectedN);
+        }
 
+        [Fact]
+        public void Should_abort_on_perfect_match()
+        {
+            var calc = new LossCalculator(new int[]{5, 1}, 10);
+
+            Match bestMatch = calc.BestMatch();
+
+            bestMatch.TotalValue.Should().Be(10);
         }
 
         [Fact]

@@ -6,15 +6,17 @@ namespace MinimumLoss
 {
     public class LossCalculator
     {
-        private readonly Stack<Match> completedMatches = new Stack<Match>();
         private readonly int expected;
         private readonly Stack<Match> matchesInProgress = new Stack<Match>();
         private readonly Stack<int> units;
+        private readonly IBestMatchFinder heavyIsBetterThanSmall;
+
 
         public LossCalculator(int[] unit, int expected)
         {
             this.expected = expected;
             units = CreateBaseStack(unit);
+            heavyIsBetterThanSmall = new HeavyIsBetterThanSmall();
         }
 
         private Stack<int> CreateBaseStack(int[] ids)
@@ -30,7 +32,7 @@ namespace MinimumLoss
         // TODO: remove best match from this class and use calculatematches instead
         public Match BestMatch()
         {
-            return CalculateMatches().OrderByDescending(x => x.Remaining).First();
+            return heavyIsBetterThanSmall.BestMatch(CalculateMatches());
         }
 
         public IEnumerable<Match> CalculateMatches()
@@ -39,46 +41,63 @@ namespace MinimumLoss
 
             while (matchesInProgress.Count > 0)
             {
-                CalculateMatch(matchesInProgress.Pop());
+                var match = matchesInProgress.Pop();
+                {
+                    if (match.Units.Count == 0)
+                    {
+                        throw new Exception("This should not happend");
+                    }
+
+                    int unit = match.Units.Pop();
+
+                    int n = 0;
+                    if (match.Units.Count == 0)
+                    {
+                        n = match.Remaining / unit;
+                        if (match.Remaining % unit != 0)
+                        {
+                            n++;
+                        }
+                    }
+
+                    for (int i = n; ; i++)
+                    {
+                        Match newMatch = Match.DeepClone(match);
+                        newMatch.AddAmount(unit, i);
+
+                        if (newMatch.IsCompleted)
+                        {
+                            Console.WriteLine(newMatch);
+                            yield return newMatch;
+                            break;
+                        }
+
+                        matchesInProgress.Push(newMatch);
+                    }
+                }
             }
-
-            return completedMatches;
         }
+    }
 
-        private void CalculateMatch(Match match)
+    public class HeavyIsBetterThanSmall : IBestMatchFinder
+    {
+        private readonly Stack<Match> completedMatches = new Stack<Match>();
+
+        public Match BestMatch(IEnumerable<Match> calculateMatches)
         {
-            if (match.Units.Count == 0)
+            foreach (var calculateMatch in calculateMatches)
             {
-                throw new Exception("This should not happend");
-            }
-
-            int unit = match.Units.Pop();
-
-            int n = 0;
-            if (match.Units.Count == 0)
-            {
-                n = match.Remaining/unit;
-                if (match.Remaining%unit != 0)
+                if (calculateMatch.Remaining == 0)
                 {
-                    n++;
+                    return calculateMatch;
                 }
             }
-
-            for (int i = n;; i++)
-            {
-                Match newMatch = Match.DeepClone(match);
-                newMatch.AddAmount(unit, i);
-
-                Console.WriteLine(newMatch.ToString());
-
-                if (newMatch.IsCompleted)
-                {
-                    completedMatches.Push(newMatch);
-                    break;
-                }
-
-                matchesInProgress.Push(newMatch);
-            }
+            return calculateMatches.OrderByDescending(x => x.Remaining).First();
         }
+    }
+
+    public interface IBestMatchFinder
+    {
+        Match BestMatch(IEnumerable<Match> calculateMatches);
     }
 }
